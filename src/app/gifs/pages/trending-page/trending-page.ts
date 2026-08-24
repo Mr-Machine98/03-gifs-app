@@ -22,4 +22,6 @@ const imageUrls: string[] = [
   templateUrl: './trending-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class TrendingPage {}
+export default class TrendingPage {
+  gifs = imageUrls;
+}
