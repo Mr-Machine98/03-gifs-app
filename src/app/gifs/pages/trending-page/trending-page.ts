@@ -1,17 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewChild } from '@angular/core';
-import { GifList } from "../../components/gif-list/gif-list";
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewChild } from '@angular/core';
 import { GifService } from '../../services/gifs.service';
+import { ScrollStateService } from 'src/app/shared/services/scroll-state.service';
 @Component({
   selector: 'app-trending-page',
-  // imports: [GifList],
   templateUrl: './trending-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class TrendingPage {
+export default class TrendingPage implements AfterViewInit {
 
   gifService = inject(GifService);
+  scrollStateService = inject(ScrollStateService);
   gifs = computed( () => this.gifService.trendingGifs() );
   scrollDivRef = viewChild<ElementRef<HTMLDivElement>>('groupDiv');
+
+  ngAfterViewInit(): void {
+    const scrollDiv = this.scrollDivRef()?.nativeElement;
+    if (!scrollDiv) return;
+    scrollDiv.scrollTop = this.scrollStateService.trendingScrollState();
+  }
 
   onScroll(event: Event) {
     // scrollDiv es el div que tiene el scroll, es decir, el div que tiene la referencia #groupDiv
@@ -27,6 +33,9 @@ export default class TrendingPage {
     //console.log({scrollTotal: scrollTop + clientHeight, scrollHeight});
     // isAtBottom es true si se ha llegado al final del scroll
     const isAtBottom = scrollTop + clientHeight + 300 >= scrollHeight;
+    
+    this.scrollStateService.trendingScrollState.set(scrollTop);
+    
     if (isAtBottom) {
       this.gifService.loadTrendingGifs();
     }
